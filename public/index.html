@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enrollment Dashboard</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>Enrollment Dashboard</h1>
+    <form id="enrollmentForm">
+        <input type="text" id="pnr" placeholder="PNR" required>
+        <textarea id="facialdata" placeholder="Facial Data (Base64)" required></textarea>
+        <button type="submit">Enroll</button>
+    </form>
+    <table id="enrollmentTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>PNR</th>
+                <th>Facial Data</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+    <script>
+        const enrollmentForm = document.getElementById('enrollmentForm');
+        const enrollmentTable = document.getElementById('enrollmentTable').getElementsByTagName('tbody')[0];
+
+        enrollmentForm.onsubmit = async (e) => {
+            e.preventDefault();
+            const pnr = document.getElementById('pnr').value;
+            const facialdata = document.getElementById('facialdata').value;
+
+            const response = await fetch('/api/enroll', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ pnr, facialdata }),
+            });
+
+            if (response.ok) {
+                fetchEnrollments(); // Refresh table after successful enrollment
+                enrollmentForm.reset();
+            }
+        };
+
+        const fetchEnrollments = async () => {
+            const response = await fetch('/api/enrollments');
+            const enrollments = await response.json();
+
+            enrollmentTable.innerHTML = ''; // Clear previous entries
+            enrollments.forEach(enrollment => {
+                const row = enrollmentTable.insertRow();
+                row.insertCell(0).innerText = enrollment.id;
+                row.insertCell(1).innerText = enrollment.pnr;
+                const imgCell = row.insertCell(2);
+                const img = document.createElement('img');
+                img.src = `data:image/jpeg;base64,${enrollment.facialdata}`;
+                img.style.width = '100px';
+                imgCell.appendChild(img);
+            });
+        };
+
+        // Load enrollments on page load
+        window.onload = fetchEnrollments;
+    </script>
+</body>
+</html>
