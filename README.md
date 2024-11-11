@@ -8,3 +8,9 @@
   > Once the BP is shared from APP the token flows to this platform as shown below.
 
   ![](aeropassserverpanel.png)
+
+
+##  API EP available
+- /enroll
+- /enrollments
+- /facialdata/:pnr
